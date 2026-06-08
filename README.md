@@ -1,4 +1,4 @@
-# gcp-apikey-audit
+# gemini-api-key-audit
 
 Quickly find **unrestricted GCP API keys** across an entire organization, folder, or
 project — and flag the ones that can be abused to run up **Gemini / Vertex AI bills**
@@ -80,7 +80,7 @@ cd gemini-api-key-audit
 ```
 
 ```bash
-chmod +x gcp_apikey_audit.py
+chmod +x gemini_api_key_audit.py
 ```
 
 **2. Authenticate gcloud** as the identity that has the roles:
@@ -118,26 +118,26 @@ gcloud services enable cloudasset.googleapis.com --project=MY_QUOTA_PROJECT
 **6. Run the audit** against your org:
 
 ```bash
-./gcp_apikey_audit.py --scope organizations/123456789 --billing-project MY_QUOTA_PROJECT
+./gemini_api_key_audit.py --scope organizations/123456789 --billing-project MY_QUOTA_PROJECT
 ```
 
 **7. (Optional) Save a CSV** for review or CI:
 
 ```bash
-./gcp_apikey_audit.py --scope organizations/123456789 --billing-project MY_QUOTA_PROJECT --csv report.csv
+./gemini_api_key_audit.py --scope organizations/123456789 --billing-project MY_QUOTA_PROJECT --csv report.csv
 ```
 
 **No Cloud Asset API access?** Skip steps 4–5 and scan per-project instead — this needs
 only the project-mode roles and no quota project:
 
 ```bash
-./gcp_apikey_audit.py --mode project --scope organizations/123456789
+./gemini_api_key_audit.py --mode project --scope organizations/123456789
 ```
 
 Or target specific projects directly:
 
 ```bash
-./gcp_apikey_audit.py --projects prod-app,maps-frontend,gen-lang-client-0123456789
+./gemini_api_key_audit.py --projects prod-app,maps-frontend,gen-lang-client-0123456789
 ```
 
 Then act on the results: review the table (CRITICAL/HIGH first) and follow
@@ -149,50 +149,50 @@ means at least one CRITICAL was found — handy as a CI gate.
 Audit a whole organization (asset mode; auto-enables the Asset API if needed):
 
 ```bash
-./gcp_apikey_audit.py --scope organizations/123456789 --billing-project my-quota-proj
+./gemini_api_key_audit.py --scope organizations/123456789 --billing-project my-quota-proj
 ```
 
 Auto-detect the org (works when your account sees exactly one org):
 
 ```bash
-./gcp_apikey_audit.py --billing-project my-quota-proj
+./gemini_api_key_audit.py --billing-project my-quota-proj
 ```
 
 Audit a single folder:
 
 ```bash
-./gcp_apikey_audit.py --scope folders/987654321 --billing-project my-quota-proj
+./gemini_api_key_audit.py --scope folders/987654321 --billing-project my-quota-proj
 ```
 
 Audit a single project:
 
 ```bash
-./gcp_apikey_audit.py --scope projects/my-project --billing-project my-project
+./gemini_api_key_audit.py --scope projects/my-project --billing-project my-project
 ```
 
 No Cloud Asset API available? Scan per-project instead (also catches AI Studio keys
 living in auto-created `gen-lang-client-*` projects outside your org):
 
 ```bash
-./gcp_apikey_audit.py --mode project --scope organizations/123456789
+./gemini_api_key_audit.py --mode project --scope organizations/123456789
 ```
 
 Scan a specific set of projects directly (implies project mode):
 
 ```bash
-./gcp_apikey_audit.py --projects prod-app,gen-lang-client-0123456789,maps-frontend
+./gemini_api_key_audit.py --projects prod-app,gen-lang-client-0123456789,maps-frontend
 ```
 
 Don't auto-enable the Asset API; error with instructions if it's off:
 
 ```bash
-./gcp_apikey_audit.py --scope organizations/123456789 --billing-project my-quota-proj --no-enable
+./gemini_api_key_audit.py --scope organizations/123456789 --billing-project my-quota-proj --no-enable
 ```
 
 Write a spreadsheet-friendly report for CI / dashboards, and include OK keys:
 
 ```bash
-./gcp_apikey_audit.py --scope organizations/123456789 --billing-project my-quota-proj --csv report.csv --all
+./gemini_api_key_audit.py --scope organizations/123456789 --billing-project my-quota-proj --csv report.csv --all
 ```
 
 Example output:
