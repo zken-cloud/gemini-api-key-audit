@@ -188,6 +188,25 @@ class AssetUnavailable(Exception):
     """Raised when Cloud Asset Inventory can't be used (API off or no permission)."""
 
 
+def asset_failure_reason(err_msg: str, billing: str) -> str:
+    """Turn a raw gcloud asset error into a specific, actionable explanation.
+    The distinct cases need different fixes, so don't blame one for another."""
+    bp = billing or "<billing-project>"
+    # Order matters: USER_PROJECT_DENIED also contains "does not have permission".
+    if "USER_PROJECT_DENIED" in err_msg or "serviceUsageConsumer" in err_msg \
+            or "serviceusage.services.use" in err_msg:
+        return (f"the quota/billing project '{bp}' can't be used — you lack "
+                f"serviceusage.services.use on it. Re-run with "
+                f"--billing-project=<a project where the Cloud Asset API is enabled and you "
+                f"have roles/serviceusage.serviceUsageConsumer>.")
+    if "has not been used" in err_msg or "SERVICE_DISABLED" in err_msg:
+        return (f"the Cloud Asset API is not enabled on the quota project '{bp}'. Enable it: "
+                f"gcloud services enable cloudasset.googleapis.com --project={bp}")
+    if "does not have permission to access" in err_msg or "PERMISSION_DENIED" in err_msg:
+        return "you need roles/cloudasset.viewer at the scope you are auditing."
+    return "Cloud Asset Inventory returned an error (see above)."
+
+
 def gather_asset_mode(scope_flag: str, scope_value: str, billing: str) -> list[dict]:
     """Enumerate keys org/folder/project-wide via Cloud Asset Inventory.
     Returns a list of records: {data, project_id, project_has_ai}.
@@ -329,14 +348,14 @@ def main() -> int:
         try:
             records = gather_asset_mode(scope_flag, scope_value, billing)
         except AssetUnavailable as e:
+            reason = asset_failure_reason(str(e), billing)
             if mode == "asset":
-                sys.exit(f"error: Cloud Asset Inventory is unavailable.\n{e}")
+                sys.exit(f"error: Cloud Asset Inventory unavailable — {reason}")
             # auto: fall back to per-project scan.
-            print(color("\nNotice: Asset Inventory unavailable — falling back to per-project "
-                        "scan.", "MEDIUM", use_color), file=sys.stderr)
-            print(color("        (covers only projects your account can list; enable "
-                        "cloudasset.googleapis.com for full org coverage.)", "dim", use_color),
+            print(color(f"\nNotice: Asset Inventory unavailable — {reason}", "MEDIUM", use_color),
                   file=sys.stderr)
+            print(color("        Falling back to a per-project scan (covers only projects your "
+                        "account can list).", "dim", use_color), file=sys.stderr)
             mode = "project"
 
     if mode == "project":
