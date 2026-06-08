@@ -6,6 +6,8 @@ project — and flag the ones that can be abused to run up **Gemini / Vertex AI 
 
 ## What it flags
 
+![Example gemini-api-key-audit output: a severity-ranked table of API keys with their risks, ending in a CRITICAL warning](sanitized_gemini_audit_screenshot.png)
+
 | Severity   | Condition |
 |------------|-----------|
 | **CRITICAL** | No API restriction **and** Gemini/Vertex AI is enabled in the key's project — an old, embedded "Maps" key that can now call paid Gemini endpoints. |
